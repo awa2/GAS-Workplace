@@ -43,7 +43,8 @@ export class Workplace {
             }
             const res = JSON.parse(UrlFetchApp.fetch(`${Workplace.API_URL}/v2.6/me/messages`, {
                 method: 'post',
-                payload: payload,
+                payload: JSON.stringify(payload),
+                contentType: 'application/json; charset=utf-8',
                 headers: {
                     'Authorization': `Bearer ${this.token}`
                 },
