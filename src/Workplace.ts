@@ -1,14 +1,14 @@
-export class Workplace {
-    public static API_URL = 'https://graph.facebook.com';
-    public static TOKEN: string;
-    public static setToken(token: string) {
-        Workplace.TOKEN = token;
+export namespace Workplace {
+    const API_URL = 'https://graph.facebook.com';
+    let TOKEN: string;
+    export function setToken(token: string) {
+        TOKEN = token;
     }
-    public static createBot() {
-        return new Workplace.Bot(Workplace.TOKEN);
+    export function createBot() {
+        return new Workplace.Bot(TOKEN);
     }
 
-    public static Bot = class Bot {
+    export class Bot {
         public token: string;
         constructor(token: string) {
             this.token = token;
@@ -39,10 +39,10 @@ export class Workplace {
             }
             return this.send('v2.6/me/messages', payload);
         }
-        public get_thread_key(emails: string[]){
+        public get_thread_key(emails: string[]) {
             // Require read_all_contents or managed_user
             const ids = emails.map(email => {
-                const res = JSON.parse(UrlFetchApp.fetch(`${Workplace.API_URL}/${email}`,{
+                const res = JSON.parse(UrlFetchApp.fetch(`${API_URL}/${email}`, {
                     method: 'get',
                     headers: {
                         'Authorization': `Bearer ${this.token}`
@@ -53,7 +53,7 @@ export class Workplace {
             });
         }
         private send(endpoint: string, payload: Object) {
-            const res = JSON.parse(UrlFetchApp.fetch(`${Workplace.API_URL}/${endpoint}`, {
+            const res = JSON.parse(UrlFetchApp.fetch(`${API_URL}/${endpoint}`, {
                 method: 'post',
                 payload: JSON.stringify(payload),
                 contentType: 'application/json; charset=utf-8',
@@ -65,37 +65,37 @@ export class Workplace {
             return res;
         }
     }
-}
 
-export class Post {
-    public id: string;
-    public message: string;
-    private token: string;
-    constructor(id: string, message: string, token: string) {
-        this.id = id;
-        this.message = message;
-        this.token = token;
-        return this;
-    }
-    public update(message: string, link?: string) {
-        const payload = {
-            formatting: 'MARKDOWN',
-            message: message,
-            link: link ? link : ''
+    export class Post {
+        public id: string;
+        public message: string;
+        private token: string;
+        constructor(id: string, message: string, token: string) {
+            this.id = id;
+            this.message = message;
+            this.token = token;
+            return this;
         }
-        this.send(this.id, payload);
+        public update(message: string, link?: string) {
+            const payload = {
+                formatting: 'MARKDOWN',
+                message: message,
+                link: link ? link : ''
+            }
+            this.send(this.id, payload);
 
-    }
-    private send(endpoint: string, payload: Object) {
-        const res = JSON.parse(UrlFetchApp.fetch(`${Workplace.API_URL}/${endpoint}`, {
-            method: 'post',
-            payload: payload,
-            headers: {
-                'Authorization': `Bearer ${this.token}`
-            },
-            muteHttpExceptions: false
-        }).getContentText());
-        return res;
+        }
+        private send(endpoint: string, payload: Object) {
+            const res = JSON.parse(UrlFetchApp.fetch(`${API_URL}/${endpoint}`, {
+                method: 'post',
+                payload: payload,
+                headers: {
+                    'Authorization': `Bearer ${this.token}`
+                },
+                muteHttpExceptions: false
+            }).getContentText());
+            return res;
+        }
     }
 }
 
@@ -122,7 +122,7 @@ export type ChatButton = {
     payload?: Object,
     messenger_extensions?: true,
     webview_height_ratio?: 'compact' | 'tall' | 'full',
-    fallback_url? : string
+    fallback_url?: string
 }
 export type ChatElement = {
     title: string,
