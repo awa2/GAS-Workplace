@@ -15,7 +15,6 @@ export namespace Workplace {
             return this;
         }
         public get_feeds(group_id: string) {
-            // https://graph.facebook.com/490333914677557/feed
             return this.query(`${group_id}/feed`, 'get');
         }
         public post(group_id: string, message: string, link?: string) {
