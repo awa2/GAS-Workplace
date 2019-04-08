@@ -14,6 +14,9 @@ export namespace Workplace {
             this.token = token;
             return this;
         }
+        public get_feeds(group_id: string) {
+            return this.query(`${group_id}/feed`, 'get');
+        }
         public post(group_id: string, message: string, link?: string) {
             const payload = {
                 formatting: 'MARKDOWN',
@@ -56,6 +59,18 @@ export namespace Workplace {
             const res = JSON.parse(UrlFetchApp.fetch(`${API_URL}/${endpoint}`, {
                 method: 'post',
                 payload: JSON.stringify(payload),
+                contentType: 'application/json; charset=utf-8',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`
+                },
+                muteHttpExceptions: false
+            }).getContentText());
+            return res;
+        }
+        private query(endpoint: string, method: 'get' | 'post', payload?: Object) {
+            const res = JSON.parse(UrlFetchApp.fetch(`${API_URL}/${endpoint}`, {
+                method: method,
+                payload: payload ? JSON.stringify(payload) : undefined,
                 contentType: 'application/json; charset=utf-8',
                 headers: {
                     'Authorization': `Bearer ${this.token}`
