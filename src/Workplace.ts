@@ -15,7 +15,14 @@ export namespace Workplace {
             return this;
         }
         public get_feeds(group_id: string) {
-            return this.query(`${group_id}/feed`, 'get');
+            const res = this.query(`${group_id}/feed`, 'get');
+            return (res.data as Array<any>).map(d => {
+                return new Post(d.id, d.message);
+            });
+        }
+        public get_post(group_id: string, post_id: string) {
+            const res = this.query(`${group_id}_${post_id}`, 'get');
+            return new Post(res.id, res.message);
         }
         public post(group_id: string, message: string, link?: string) {
             const payload = {
@@ -23,9 +30,8 @@ export namespace Workplace {
                 message: message,
                 link: link ? link : ''
             }
-            return this.send(`${group_id}/feed`, payload);
+            return this.query(`${group_id}/feed`, 'post', payload);
         }
-
         public chat(thread_key: string, _message: string | ChatTemplate) {
             let message;
             if (typeof _message === 'string') {
@@ -40,7 +46,7 @@ export namespace Workplace {
                 },
                 message: message
             }
-            return this.send('v2.6/me/messages', payload);
+            return this.query('v2.6/me/messages', 'post', payload);
         }
         public get_thread_key(emails: string[]) {
             // Require read_all_contents or managed_user
@@ -52,21 +58,10 @@ export namespace Workplace {
                     },
                     muteHttpExceptions: false
                 }).getContentText());
-                Logger.log(res);
             });
+            return ids;
         }
-        private send(endpoint: string, payload: Object) {
-            const res = JSON.parse(UrlFetchApp.fetch(`${API_URL}/${endpoint}`, {
-                method: 'post',
-                payload: JSON.stringify(payload),
-                contentType: 'application/json; charset=utf-8',
-                headers: {
-                    'Authorization': `Bearer ${this.token}`
-                },
-                muteHttpExceptions: false
-            }).getContentText());
-            return res;
-        }
+
         private query(endpoint: string, method: 'get' | 'post', payload?: Object) {
             const res = JSON.parse(UrlFetchApp.fetch(`${API_URL}/${endpoint}`, {
                 method: method,
@@ -84,11 +79,14 @@ export namespace Workplace {
     export class Post {
         public id: string;
         public message: string;
+        public created_time: Date;
         private token: string;
-        constructor(id: string, message: string, token: string) {
+        constructor(id: string, message: string, token?: string) {
             this.id = id;
             this.message = message;
-            this.token = token;
+            this.token = token ? token : TOKEN;
+            const req = this.query(this.id, 'get');
+            this.created_time = new Date(req.created_time);
             return this;
         }
         public update(message: string, link?: string) {
@@ -97,13 +95,13 @@ export namespace Workplace {
                 message: message,
                 link: link ? link : ''
             }
-            this.send(this.id, payload);
-
+            this.query(this.id, 'post', payload);
         }
-        private send(endpoint: string, payload: Object) {
+        private query(endpoint: string, method: 'get' | 'post', payload?: Object) {
             const res = JSON.parse(UrlFetchApp.fetch(`${API_URL}/${endpoint}`, {
-                method: 'post',
-                payload: payload,
+                method: method,
+                payload: payload ? JSON.stringify(payload) : undefined,
+                contentType: 'application/json; charset=utf-8',
                 headers: {
                     'Authorization': `Bearer ${this.token}`
                 },
