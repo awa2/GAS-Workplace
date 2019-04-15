@@ -17,12 +17,22 @@ export namespace Workplace {
         public get_feeds(group_id: string) {
             const res = this.query(`${group_id}/feed`, 'get');
             return (res.data as Array<any>).map(d => {
-                return new Post(d.id, d.message);
+                const post: IPost = {
+                    id: d.id,
+                    message: d.message,
+                    updated_time: new Date(d.updated_time)
+                }
+                return new Post(d);
             });
         }
         public get_post(group_id: string, post_id: string) {
             const res = this.query(`${group_id}_${post_id}`, 'get');
-            return new Post(res.id, res.message);
+            const post: IPost = {
+                id: res.id,
+                message: res.message,
+                updated_time: new Date(res.updated_time)
+            }
+            return new Post(post);
         }
         public post(group_id: string, message: string, link?: string) {
             const payload = {
@@ -76,14 +86,21 @@ export namespace Workplace {
         }
     }
 
-    export class Post {
+    export interface IPost {
+        id: string;
+        updated_time: Date;
+        message: string;
+    }
+    export class Post implements IPost {
         public id: string;
         public message: string;
         public created_time: Date;
+        public updated_time: Date;
         private token: string;
-        constructor(id: string, message: string, token?: string) {
-            this.id = id;
-            this.message = message;
+        constructor(post: IPost, token?: string) {
+            this.id = post.id;
+            this.message = post.message;
+            this.updated_time = post.updated_time;
             this.token = token ? token : TOKEN;
             const req = this.query(this.id, 'get');
             this.created_time = new Date(req.created_time);
@@ -95,7 +112,8 @@ export namespace Workplace {
                 message: message,
                 link: link ? link : ''
             }
-            this.query(this.id, 'post', payload);
+            const res = this.query(this.id, 'post', payload);
+            return res;
         }
         private query(endpoint: string, method: 'get' | 'post', payload?: Object) {
             const res = JSON.parse(UrlFetchApp.fetch(`${API_URL}/${endpoint}`, {
