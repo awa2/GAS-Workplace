@@ -96,6 +96,7 @@ export namespace Workplace {
         public message: string;
         public created_time: Date;
         public updated_time: Date;
+        public responsed_time: Date;
         private token: string;
         constructor(post: IPost, token?: string) {
             this.id = post.id;
@@ -104,6 +105,8 @@ export namespace Workplace {
             this.token = token ? token : TOKEN;
             const req = this.query(this.id, 'get');
             this.created_time = new Date(req.created_time);
+            const comments = this.query(`${this.id}/comments`, 'get');
+            this.responsed_time = new Date(comments.data[0].created_time);
             return this;
         }
         public update(message: string, link?: string) {
