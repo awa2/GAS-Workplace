@@ -14,8 +14,8 @@ export namespace Workplace {
             this.token = token;
             return this;
         }
-        public get_feeds(group_id: string) {
-            const res = this.query(`${group_id}/feed`, 'get');
+        public get_feeds(group_id: string, option: string) {
+            const res = this.query(`${group_id}/feed?limit=100`, 'get');
             return (res.data as Array<any>).map(d => {
                 const post: IPost = {
                     id: d.id,
