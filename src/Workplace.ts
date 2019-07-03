@@ -24,7 +24,7 @@ export namespace Workplace {
                     created_time: new Date(d.created_time),
                     from: d.from
                 }
-                return new Post(d);
+                return new Post(post);
             });
         }
         public get_post(group_id: string, post_id: string) {
