@@ -1,6 +1,6 @@
 {
   "name": "@ts-module-for-gas/gas-workplace",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Workplace(by Facebook) module for GAS that written by TypeScript",
   "main": "index.ts",
   "directories": {
