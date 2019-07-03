@@ -15,22 +15,26 @@ export namespace Workplace {
             return this;
         }
         public get_feeds(group_id: string) {
-            const res = this.query(`${group_id}/feed?limit=100`, 'get');
+            const res = this.query(`${group_id}/feed?limit=100&fields=id,message,updated_time,created_time,from`, 'get');
             return (res.data as Array<any>).map(d => {
                 const post: IPost = {
                     id: d.id,
                     message: d.message,
-                    updated_time: new Date(d.updated_time)
+                    updated_time: new Date(d.updated_time),
+                    created_time: new Date(d.created_time),
+                    from: d.from
                 }
                 return new Post(d);
             });
         }
         public get_post(group_id: string, post_id: string) {
-            const res = this.query(`${group_id}_${post_id}`, 'get');
+            const res = this.query(`${group_id}_${post_id}?fields=id,message,updated_time,created_time,from`, 'get');
             const post: IPost = {
                 id: res.id,
                 message: res.message,
-                updated_time: new Date(res.updated_time)
+                updated_time: new Date(res.updated_time),
+                created_time: new Date(res.created_time),
+                from: res.from
             }
             return new Post(post);
         }
@@ -88,23 +92,26 @@ export namespace Workplace {
 
     export interface IPost {
         id: string;
+        created_time: Date;
         updated_time: Date;
         message: string;
+        from: Profile;
     }
     export class Post implements IPost {
         public id: string;
         public message: string;
         public created_time: Date;
         public updated_time: Date;
+        public from: Profile;
         public responsed_time?: Date;
         private token: string;
         constructor(post: IPost, token?: string) {
             this.id = post.id;
             this.message = post.message;
+            this.created_time = post.created_time;
             this.updated_time = post.updated_time;
+            this.from = post.from;
             this.token = token ? token : TOKEN;
-            const req = this.query(this.id, 'get');
-            this.created_time = new Date(req.created_time);
             const comments = this.query(`${this.id}/comments`, 'get');
             if(comments.data[0]){
                 this.responsed_time = new Date(comments.data[0].created_time);
@@ -134,7 +141,10 @@ export namespace Workplace {
         }
     }
 }
-
+export type Profile = {
+    name: string,
+    id: string
+}
 export type ChatMessage = {
     text?: string,
     attachement?: ChatTemplate
